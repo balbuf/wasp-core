@@ -1,0 +1,14 @@
+{
+    "name": "oomphinc/wasp-core",
+    "description": "Core transformation handlers for wasp",
+    "type": "wasp-plugin",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "require": {},
+    "autoload": {
+        "psr-4": {"OomphInc\\WASP\\Core\\": "src/"}
+    },
+    "extra": {
+        "class": "OomphInc\\WASP\\Core\\Plugin"
+    }
+}
