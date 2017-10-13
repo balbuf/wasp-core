@@ -75,7 +75,7 @@ class BasicHandlers {
 					return $transformer->create('TranslatableTextExpression', ['text' => $label]);
 				}, str_replace($patterns, $replacements, $args['labels']))
 			]);
-			$transformer->setup_file->add_expression(
+			$transformer->setupFile->addExpression(
 				$transformer->create('FunctionExpression', [
 					'name' => 'register_post_type',
 					'args' => [$post_type, $transformer->create('ArrayExpression', ['array' => $args])],
@@ -92,7 +92,7 @@ class BasicHandlers {
 
 	public function site_options($transformer, $data) {
 		foreach ($data as $option => $value) {
-			$transformer->setup_file->add_lazy_expression(
+			$transformer->setupFile->addLazyExpression(
 				$transformer->create('FunctionExpression', [
 					'name' => 'update_option',
 					'args' => [$option, $value],
@@ -117,7 +117,7 @@ class BasicHandlers {
 			}
 			$settings += ['crop' => true];
 			$args = [$name, $settings['width'], $settings['height'], $settings['crop']];
-			$transformer->setup_file->add_expression(
+			$transformer->setupFile->addExpression(
 				$transformer->create('FunctionExpression', [
 					'name' => 'add_image_size',
 					'args' => $args,
@@ -129,7 +129,7 @@ class BasicHandlers {
 
 	public function constants($transformer, $data) {
 		foreach ($data as $constant => $value) {
-			$transformer->setup_file->add_expression(
+			$transformer->setupFile->addExpression(
 				$transformer->create('BlockExpression', [
 					'name' => 'if',
 					'parenthetical' => $transformer->create('FunctionExpression', [
@@ -153,7 +153,7 @@ class BasicHandlers {
 			return $transformer->create('TranslatableTextExpression', ['text' => $label]);
 		}, $data);
 
-		$transformer->setup_file->add_expression(
+		$transformer->setupFile->addExpression(
 			$transformer->create('FunctionExpression', [
 				'name' => 'register_nav_menus',
 				'args' => [$transformer->create('ArrayExpression', ['array' => $data])],
@@ -200,7 +200,7 @@ PHP;
 		$autoloader = str_replace('%PREFIX%', var_export((string) $data['namespace'], true), $autoloader);
 		$autoloader = str_replace('%DIR%', var_export('/' . trim((string) $data['dir'], '/') . '/', true), $autoloader);
 
-		$transformer->setup_file->add_expression(
+		$transformer->setupFile->addExpression(
 			$transformer->create('RawExpression', ['expression' => $autoloader])
 		);
 	}
@@ -208,7 +208,7 @@ PHP;
 	public function theme_supports($transformer, $data) {
 		foreach ($data as $feature) {
 			if (is_string($feature)) {
-				$transformer->setup_file->add_expression(
+				$transformer->setupFile->addExpression(
 					$transformer->create('FunctionExpression', [
 						'name' => 'add_theme_support',
 						'args' => [$feature],
@@ -219,7 +219,7 @@ PHP;
 			if (is_array($feature) && count($feature) === 1) {
 				foreach ($feature as $name => $args) {
 					array_unshift($args, $name);
-					$transformer->setup_file->add_expression(
+					$transformer->setupFile->addExpression(
 						$transformer->create('FunctionExpression', [
 							'name' => 'add_theme_support',
 							'args' => $args,
@@ -243,7 +243,7 @@ PHP;
 					]);
 				}
 			}
-			$transformer->setup_file->add_expression(
+			$transformer->setupFile->addExpression(
 				$transformer->create('FunctionExpression', [
 					'name' => 'register_sidebar',
 					'args' => [
@@ -262,7 +262,7 @@ PHP;
 		$dir = isset($data['dir']) ? trim($data['dir'], '/') . '/' : '';
 		if (isset($data['files'])) {
 			foreach ($data['files'] as $file) {
-				$transformer->setup_file->add_expression(
+				$transformer->setupFile->addExpression(
 					$transformer->create('RawExpression', [
 						'expression' => "require_once __DIR__ . '/$dir$file';",
 					])

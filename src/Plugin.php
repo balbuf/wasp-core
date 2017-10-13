@@ -18,7 +18,7 @@ class Plugin implements EventSubscriberInterface {
 		$handlers = new BasicHandlers(static::$application);
 
 		foreach (get_class_methods($handlers) as $handler) {
-			$transformer->add_handler($handler, 'wasp_' . $handler, [$handlers, $handler]);
+			$transformer->setHandler($handler, 'wasp_' . $handler, [$handlers, $handler]);
 		}
 	}
 
