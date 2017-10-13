@@ -17,7 +17,7 @@ class BasicHandlers {
 		$this->application = $application;
 	}
 
-	public function post_types($transformer, $data) {
+	public function postTypes($transformer, $data) {
 		$defaults = [
 			'labels' => [
 				'name' => '%plural%',
@@ -47,9 +47,9 @@ class BasicHandlers {
 			$defaults = array_merge_recursive($defaults, $data['default']);
 			unset($data['default']);
 		}
-		foreach ($data as $post_type => $args) {
+		foreach ($data as $postType => $args) {
 			if (isset($args['post_type'])) {
-				$post_type = $args['post_type'];
+				$postType = $args['post_type'];
 				unset($args['post_type']);
 			}
 			if (isset($args['label'])) {
@@ -57,14 +57,14 @@ class BasicHandlers {
 			} elseif (isset($args['labels']['name'])) {
 				$plural = $args['labels']['name'];
 			} else {
-				$plural = ucwords($post_type);
+				$plural = ucwords($postType);
 				$args['label'] = $plural;
 			}
 			if (!isset($args['labels']['singular_name'])) {
 				if (substr($plural, -1) === 's') {
 					$args['labels']['singular_name'] = substr($plural, 0, -1);
 				} else {
-					$this->application->services->logger->warning("Could not determine singular name for $post_type post type. Skipping.");
+					$this->application->services->logger->warning("Could not determine singular name for $postType post type. Skipping.");
 					continue;
 				}
 			}
@@ -78,7 +78,7 @@ class BasicHandlers {
 			$transformer->setupFile->addExpression(
 				$transformer->create('FunctionExpression', [
 					'name' => 'register_post_type',
-					'args' => [$post_type, $transformer->create('ArrayExpression', ['array' => $args])],
+					'args' => [$postType, $transformer->create('ArrayExpression', ['array' => $args])],
 				]),
 				'init'
 			);
@@ -90,7 +90,7 @@ class BasicHandlers {
 
 	}
 
-	public function site_options($transformer, $data) {
+	public function siteOptions($transformer, $data) {
 		foreach ($data as $option => $value) {
 			$transformer->setupFile->addLazyExpression(
 				$transformer->create('FunctionExpression', [
@@ -109,7 +109,7 @@ class BasicHandlers {
 
 	}
 
-	public function image_sizes($transformer, $data) {
+	public function imageSizes($transformer, $data) {
 		foreach ($data as $name => $settings) {
 			if (!isset($settings['width'], $settings['height'])) {
 				$this->application->services->logger->warning("Error: missing width or height for image size '$name'");
@@ -148,7 +148,7 @@ class BasicHandlers {
 		}
 	}
 
-	public function menu_locations($transformer, $data) {
+	public function menuLocations($transformer, $data) {
 		$data = array_map(function($label) use ($transformer) {
 			return $transformer->create('TranslatableTextExpression', ['text' => $label]);
 		}, $data);
@@ -205,7 +205,7 @@ PHP;
 		);
 	}
 
-	public function theme_supports($transformer, $data) {
+	public function themeSupports($transformer, $data) {
 		foreach ($data as $feature) {
 			if (is_string($feature)) {
 				$transformer->setupFile->addExpression(
@@ -231,7 +231,7 @@ PHP;
 		}
 	}
 
-	public function widget_areas($transformer, $data) {
+	public function widgetAreas($transformer, $data) {
 		foreach ($data as $id => $args) {
 			if (!isset($args['id'])) {
 				$args['id'] = $id . '-widget';
