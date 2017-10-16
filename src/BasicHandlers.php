@@ -1,14 +1,6 @@
 <?php
 namespace OomphInc\WASP\Core;
 
-use OomphInc\WASP\Compilable\FunctionExpression;
-use OomphInc\WASP\Compilable\ArrayExpression;
-use OomphInc\WASP\Compilable\TranslatableTextExpression;
-use OomphInc\WASP\Compilable\RawExpression;
-use OomphInc\WASP\Compilable\CompositeExpression;
-use OomphInc\WASP\Compilable\BlockExpression;
-
-
 class BasicHandlers {
 
 	protected $application;
@@ -80,7 +72,7 @@ class BasicHandlers {
 					'name' => 'register_post_type',
 					'args' => [$postType, $transformer->create('ArrayExpression', ['array' => $args])],
 				]),
-				'init'
+				['hook' => 'init']
 			);
 		}
 
@@ -92,11 +84,12 @@ class BasicHandlers {
 
 	public function siteOptions($transformer, $data) {
 		foreach ($data as $option => $value) {
-			$transformer->setupFile->addLazyExpression(
+			$transformer->setupFile->addExpression(
 				$transformer->create('FunctionExpression', [
 					'name' => 'update_option',
 					'args' => [$option, $value],
-				])
+				]),
+				['lazy' => true]
 			);
 		}
 	}
@@ -122,7 +115,7 @@ class BasicHandlers {
 					'name' => 'add_image_size',
 					'args' => $args,
 				]),
-				'after_setup_theme'
+				['hook' => 'after_setup_theme']
 			);
 		}
 	}
@@ -143,7 +136,8 @@ class BasicHandlers {
 							'args' => [$constant, $value],
 						])
 					],
-				])
+				]),
+				['priority' => 1]
 			);
 		}
 	}
@@ -158,7 +152,7 @@ class BasicHandlers {
 				'name' => 'register_nav_menus',
 				'args' => [$transformer->create('ArrayExpression', ['array' => $data])],
 			]),
-			'after_setup_theme'
+			['hook' => 'after_setup_theme']
 		);
 	}
 
@@ -201,33 +195,29 @@ PHP;
 		$autoloader = str_replace('%DIR%', var_export('/' . trim((string) $data['dir'], '/') . '/', true), $autoloader);
 
 		$transformer->setupFile->addExpression(
-			$transformer->create('RawExpression', ['expression' => $autoloader])
+			$transformer->create('RawExpression', ['expression' => $autoloader]),
+			['priority' => 2]
 		);
 	}
 
 	public function themeSupports($transformer, $data) {
 		foreach ($data as $feature) {
 			if (is_string($feature)) {
-				$transformer->setupFile->addExpression(
-					$transformer->create('FunctionExpression', [
-						'name' => 'add_theme_support',
-						'args' => [$feature],
-					]),
-					'after_setup_theme'
-				);
+				$expression = $transformer->create('FunctionExpression', [
+					'name' => 'add_theme_support',
+					'args' => [$feature],
+				]);
+			} else if (is_array($feature) && count($feature) === 1) {
+				$args = reset($feature);
+				array_unshift($args, key($feature));
+				$expression = $transformer->create('FunctionExpression', [
+					'name' => 'add_theme_support',
+					'args' => $args,
+				]);
+			} else {
+				continue;
 			}
-			if (is_array($feature) && count($feature) === 1) {
-				foreach ($feature as $name => $args) {
-					array_unshift($args, $name);
-					$transformer->setupFile->addExpression(
-						$transformer->create('FunctionExpression', [
-							'name' => 'add_theme_support',
-							'args' => $args,
-						]),
-						'after_setup_theme'
-					);
-				}
-			}
+			$transformer->setupFile->addExpression($expression, ['hook' => 'after_setup_theme']);
 		}
 	}
 
@@ -252,7 +242,7 @@ PHP;
 						]),
 					],
 				]),
-				'widgets_init'
+				['hook' => 'widgets_init']
 			);
 		}
 	}
