@@ -7,17 +7,16 @@ use OomphInc\WASP\Events;
 
 class Plugin implements EventSubscriberInterface {
 
-	protected $application;
+	protected static $application;
 
 	public function __construct($application) {
-		$this->application = $application;
+		static::$application = $application;
 	}
 
 	static public function registerHandlers($event) {
 		$transformer = $event->getArgument('transformer');
-		foreach (get_class_methods('OomphInc\\WASP\\Core\\BasicHandlers') as $handler) {
-			$transformer->add_handler($handler, 'wasp_' . $handler, ['OomphInc\\WASP\\Core\\BasicHandlers', $handler]);
-		}
+		$handlers = new BasicHandlers(static::$application);
+		$transformer->importHandlersFromClass($handlers, 'wasp_');
 	}
 
 	static public function getSubscribedEvents() {
