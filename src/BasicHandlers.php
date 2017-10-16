@@ -202,21 +202,19 @@ PHP;
 
 	public function themeSupports($transformer, $data) {
 		foreach ($data as $feature) {
+			$expression = $transformer->create('FunctionExpression', [
+				'name' => 'add_theme_support',
+			]);
+
 			if (is_string($feature)) {
-				$expression = $transformer->create('FunctionExpression', [
-					'name' => 'add_theme_support',
-					'args' => [$feature],
-				]);
+				$expression->args = [$feature];
 			} else if (is_array($feature) && count($feature) === 1) {
-				$args = reset($feature);
-				array_unshift($args, key($feature));
-				$expression = $transformer->create('FunctionExpression', [
-					'name' => 'add_theme_support',
-					'args' => $args,
-				]);
+				$expression->args = reset($feature);
+				array_unshift($expression->args, key($feature));
 			} else {
 				continue;
 			}
+
 			$transformer->setupFile->addExpression($expression, ['hook' => 'after_setup_theme']);
 		}
 	}
