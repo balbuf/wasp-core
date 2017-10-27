@@ -1,6 +1,8 @@
 <?php
 namespace OomphInc\WASP\Core;
 
+use OomphInc\WASP\FileSystemHelper;
+
 class BasicHandlers {
 
 	protected $application;
@@ -172,7 +174,7 @@ spl_autoload_register( function ( $class ) {
 	// project-specific namespace prefix
 	$prefix = %PREFIX%;
 	// base directory for the namespace prefix
-	$base_dir = __DIR__ . %DIR%;
+	$base_dir = %DIR%;
 	// does the class use the namespace prefix?
 	$len = strlen( $prefix );
 	if ( strncmp( $prefix, $class, $len ) !== 0 ) {
@@ -192,7 +194,7 @@ spl_autoload_register( function ( $class ) {
 } );
 PHP;
 		$autoloader = str_replace('%PREFIX%', var_export((string) $data['namespace'], true), $autoloader);
-		$autoloader = str_replace('%DIR%', var_export('/' . trim((string) $data['dir'], '/') . '/', true), $autoloader);
+		$autoloader = str_replace('%DIR%', $transformer->setupFile->convertPath(rtrim($data['dir'], '/') . '/'), $autoloader);
 
 		$transformer->setupFile->addExpression(
 			$transformer->create('RawExpression', ['expression' => $autoloader]),
@@ -245,17 +247,37 @@ PHP;
 		}
 	}
 
-	// @todo Add file globbing
 	public function includes($transformer, $data) {
-		$dir = isset($data['dir']) ? trim($data['dir'], '/') . '/' : '';
-		if (isset($data['files'])) {
-			foreach ($data['files'] as $file) {
-				$transformer->setupFile->addExpression(
-					$transformer->create('RawExpression', [
-						'expression' => "require_once __DIR__ . '/$dir$file';",
-					])
-				);
-			}
+		// defaults
+		$data += [
+			'use' => 'require_once',
+			'files' => [],
+			'files_match' => [],
+		];
+
+		if (!preg_match('/^(?:require|include)(?:_once)?$/', $data['use'])) {
+			$this->application->services->logger->warn("Invalid use type '{$data['use']}, using 'require_once' instead");
+			$data['use'] = 'require_once';
 		}
+
+		// get explicit files
+		$files = FileSystemHelper::flattenFileArray('', $data['files']);
+
+		// find files and add by globbing
+		foreach ((array) $data['files_match'] as $pattern) {
+			$files = array_merge($files, $this->application->services->filesystem->getFiles($pattern));
+		}
+
+		$expression = $transformer->create('CompositeExpression', ['joiner' => "\n"]);
+
+		// add the files
+		foreach ($files as $file) {
+			$expression->expressions[] = $transformer->create('RawExpression', [
+				'expression' => $data['use'] . ' ' . $transformer->setupFile->convertPath($file) . ';',
+			]);
+		}
+
+		$transformer->setupFile->addExpression($expression, ['priority' => 3]);
 	}
+
 }
