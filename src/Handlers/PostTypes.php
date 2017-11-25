@@ -14,7 +14,7 @@ class PostTypes extends DependentHandler {
 		return [
 			'default' => [
 				// default to not registering a post if it is a known built-in
-				'register' => '{{ this.post_type.getValue() not in ' . json_encode( $this->builtins ) . ' }}',
+				'register' => '{% do output.setValue(this.post_type.getValue() not in ' . json_encode( $this->builtins ) . ') %}',
 				'post_type' => '{{ prop[1] }}',
 				'labels' => [
 					'name' => '{{ this.parent.label }}',
