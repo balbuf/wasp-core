@@ -9,6 +9,8 @@ class PostTypes extends DependentHandler {
 	protected $logger;
 	// built-in post types
 	protected $builtins = ['post', 'page', 'attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset'];
+	// properties to exclude from the args array
+	protected $propsExclude = ['register', 'extend', 'post_type', 'label'];
 
 	public function getDefaults($property) {
 		return [
@@ -97,7 +99,7 @@ class PostTypes extends DependentHandler {
 			}
 
 			// remove some keys from the args array
-			$args = array_diff_key($args, array_flip(['register', 'extend', 'post_type', 'label']));
+			$args = array_diff_key($args, array_flip($this->propsExclude));
 
 			// wrap labels in translatable text expressions
 			$args['labels'] = $transformer->create('ArrayExpression', [
