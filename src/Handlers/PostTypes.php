@@ -7,8 +7,6 @@ use OomphInc\WASP\Handler\DependentHandler;
 class PostTypes extends DependentHandler {
 
 	protected $logger;
-	// built-in post types
-	protected $builtins = ['post', 'page', 'attachment', 'revision', 'nav_menu_item', 'custom_css', 'customize_changeset'];
 
 	public function getDefaults($property) {
 		return [
@@ -65,14 +63,14 @@ class PostTypes extends DependentHandler {
 		foreach ($config as $args) {
 			$postType = $args['post_type'];
 
-			// register the post type?
-			if (!empty($args['register'])) {
-				// we need the post type name at a minimum
-				if (empty($args['register']['labels']['name'])) {
-					$this->logger->warning("Could not determine name for '{$postType}' post type. Skipping.");
-					continue;
-				}
+			// we need the post type name at a minimum
+			if (empty($args['register']['labels']['name'])) {
+				$this->logger->warning("Could not determine name for '{$postType}' post type. Not registering.");
+				$args['register'] = false;
+			}
 
+			// register the post type?
+			if (is_array($args['register'])) {
 				// wrap labels in translatable text expressions
 				$args['register']['labels'] = $transformer->create('ArrayExpression', [
 					'array' => array_map(function($label) use ($transformer) {
