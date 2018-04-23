@@ -85,52 +85,56 @@ class Scripts extends DependentHandler {
 			$asset['version'] = $this->getVersion($asset);
 
 			// process the enqueue contexts
-			foreach ($asset['enqueue'] as $type => $enqueue) {
-				// valid enqueue type?
-				if (!isset($this->enqueueTypes[$type])) {
-					$this->logger->warning("Unknown enqueue type '{$type}' - skipping");
-					continue;
+			if (is_array($asset['enqueue'])) {
+				foreach ($asset['enqueue'] as $type => $enqueue) {
+					// valid enqueue type?
+					if (!isset($this->enqueueTypes[$type])) {
+						$this->logger->warning("Unknown enqueue type '{$type}' - skipping");
+						continue;
+					}
+
+					if (!isset($enqueueExpressions[$type])) {
+						$enqueueExpressions[$type] = [];
+					}
+
+					$expression = $transformer->create('FunctionExpression', [
+						'name' => "wp_enqueue_{$this->assetType}",
+						'args' => $this->getArgs($asset),
+					]);
+
+					// do we have localization text this asset?
+					$this->doCustomization($asset, $expression);
+					// should this asset override a previous one?
+					$this->doOverride($asset, $expression);
+					// a string value is a raw condition statement to wrap the script in
+					$this->doConditional($enqueue, $expression);
+
+					$enqueueExpressions[$type][] = $expression;
 				}
-
-				if (!isset($enqueueExpressions[$type])) {
-					$enqueueExpressions[$type] = [];
-				}
-
-				$expression = $transformer->create('FunctionExpression', [
-					'name' => "wp_enqueue_{$this->assetType}",
-					'args' => $this->getArgs($asset),
-				]);
-
-				// do we have localization text this asset?
-				$this->doCustomization($asset, $expression);
-				// should this asset override a previous one?
-				$this->doOverride($asset, $expression);
-				// a string value is a raw condition statement to wrap the script in
-				$this->doConditional($enqueue, $expression);
-
-				$enqueueExpressions[$type][] = $expression;
 			}
 
 			// process the dequeue contexts
-			foreach ($asset['dequeue'] as $type => $dequeue) {
-				// valid enqueue type?
-				if (!isset($this->enqueueTypes[$type])) {
-					$this->logger->warning("Unknown enqueue type '{$type}' - skipping");
-					continue;
+			if (is_array($asset['dequeue'])) {
+				foreach ($asset['dequeue'] as $type => $dequeue) {
+					// valid enqueue type?
+					if (!isset($this->enqueueTypes[$type])) {
+						$this->logger->warning("Unknown enqueue type '{$type}' - skipping");
+						continue;
+					}
+
+					if (!isset($dequeueExpressions[$type])) {
+						$dequeueExpressions[$type] = [];
+					}
+
+					$expression = $transformer->create('FunctionExpression', [
+						'name' => "wp_dequeue_{$this->assetType}",
+						'args' => [$asset['handle']],
+					]);
+
+					// a string value is a raw condition statement to wrap the script in
+					$this->doConditional($dequeue, $expression);
+					$dequeueExpressions[$type][] = $expression;
 				}
-
-				if (!isset($dequeueExpressions[$type])) {
-					$dequeueExpressions[$type] = [];
-				}
-
-				$expression = $transformer->create('FunctionExpression', [
-					'name' => "wp_dequeue_{$this->assetType}",
-					'args' => [$asset['handle']],
-				]);
-
-				// a string value is a raw condition statement to wrap the script in
-				$this->doConditional($dequeue, $expression);
-				$dequeueExpressions[$type][] = $expression;
 			}
 		}
 
