@@ -56,6 +56,7 @@ class PostTypes extends DependentHandler {
 				'supports' => null,
 				'unregister' => false,
 				'remove_support' => [],
+				'remove_taxonomies' => [],
 			],
 		];
 	}
@@ -127,6 +128,19 @@ class PostTypes extends DependentHandler {
 					$transformer->outputExpression->addExpression(
 						$transformer->create('FunctionExpression', [
 							'name' => 'register_taxonomy_for_object_type',
+							'args' => [$taxonomy, $postType],
+						]),
+						['hook' => 'init', 'priority' => 999]
+					);
+				}
+			}
+
+			// unassign taxonomies
+			if (is_array($args['remove_taxonomies'])) {
+				foreach ($args['remove_taxonomies'] as $taxonomy) {
+					$transformer->outputExpression->addExpression(
+						$transformer->create('FunctionExpression', [
+							'name' => 'unregister_taxonomy_for_object_type',
 							'args' => [$taxonomy, $postType],
 						]),
 						['hook' => 'init', 'priority' => 999]
