@@ -84,7 +84,9 @@ class Scripts extends DependentHandler {
 
 			// remove any dequeue types from the enqueue array
 			$asset['enqueue'] = array_diff_key($asset['enqueue'], $asset['dequeue']);
-			$asset['version'] = $this->getVersion($asset);
+			if (!empty($asset['src'])) {
+				$asset['version'] = $this->getVersion($asset);
+			}
 
 			// process the enqueue contexts
 			foreach ($asset['enqueue'] as $type => $enqueue) {
@@ -253,6 +255,7 @@ class Scripts extends DependentHandler {
 
 		if ($this->isExternal($asset['src'])) {
 			// @todo use a curl service
+			$version = false;
 		} else {
 			$this->filesystem->pushd($this->transformer->getVar('rootDir'));
 			try {
