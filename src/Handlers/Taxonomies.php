@@ -44,7 +44,7 @@ class Taxonomies extends DependentHandler {
 					],
 				],
 				'unregister' => false,
-				'remove_post_types' => [],
+				'remove_post_types' => null,
 			],
 		];
 	}
@@ -97,7 +97,7 @@ class Taxonomies extends DependentHandler {
 			}
 
 			if (is_array($args['remove_post_types'])) {
-				foreach ($args['post_types'] as $postType) {
+				foreach ($args['remove_post_types'] as $postType) {
 					$transformer->outputExpression->addExpression(
 						$transformer->create('FunctionExpression', [
 							'name' => 'unregister_taxonomy_for_object_type',
