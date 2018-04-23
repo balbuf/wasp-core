@@ -4,7 +4,9 @@
     "type": "wasp-plugin",
     "license": "MIT",
     "minimum-stability": "dev",
-    "require": {},
+    "require": {
+        "oomphinc/wasp": ">=0.9"
+    },
     "autoload": {
         "psr-4": {"OomphInc\\WASP\\Core\\": "src/"}
     },
