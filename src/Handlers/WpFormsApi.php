@@ -114,7 +114,7 @@ PHP
 				]
 			]), [
 				'hook' => 'save_post',
-				'args' => ['post'],
+				'args' => ['post_id', 'post'],
 			]);
 
 			// add form schema
@@ -142,6 +142,7 @@ PHP
 						'inline' => true,
 					]),
 					'comparison' => array_unique($postTypes),
+					'operator' => 'in',
 				]),
 				'expressions' => [$nonce],
 			]), [
@@ -207,7 +208,7 @@ PHP
 			// keep track that this meta box has a form
 			$this->metaBoxForms[] = $id;
 
-			$metaBox['callable'] = [
+			$metaBox['callback'] = [
 				'type' => 'php',
 				'body' => '
 global $' . static::FORMS_VAR . ';
@@ -225,6 +226,11 @@ echo \WP_Forms_API::render_form( $' . static::FORMS_VAR . '[' . var_export($id, 
 			];
 
 			$propertyTree->set('meta_boxes', $id, $metaBox);
+		}
+
+		// if we had any forms, set a bogus property so our handler is triggered
+		if ($this->hasWidgets || count($this->metaBoxForms)) {
+			$propertyTree->set('wp_forms_api', true);
 		}
 	}
 
