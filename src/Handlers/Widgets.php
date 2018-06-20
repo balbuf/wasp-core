@@ -65,55 +65,26 @@ class Widgets extends AbstractHandler {
 
 			// create the methods
 			foreach ($widget['methods'] as $method => $options) {
-				$args = isset($this->methods[$method]) ? $this->methods[$method] : $options['args'];
+				// string is shorthand for callable
+				if (is_string($options)) {
+					$options = [
+						'type' => 'callable',
+						'body' => $options,
+					];
+				}
 
-				switch ($options['type']) {
-					// straight callable
-					case 'callable':
-						// convert array callable to string callable
-						if (is_array($options['body']) && array_keys($options['body']) === [0, 1]) {
-							$options['body'] = implode('::', $options['body']);
-						}
+				if (isset($this->methods[$method])) {
+					$options['args'] = $this->methods[$method];
+				}
 
-						$expression = $transformer->create('RawExpression', [
-							'expression' => 'return ' . $options['body'] . '( ' . preg_replace('/^[^$].+$/', '$$0', $args) . ' );',
-						]);
-						break;
-
-					// template file
-					case 'template':
-						$expression = $transformer->create('RawExpression', [
-							'expression' => 'return require ' . $transformer->outputExpression->convertPath($options['body']) . ';',
-						]);
-						break;
-
-					// raw php
-					case 'php':
-						$expression = $transformer->create('RawExpression', [
-							'expression' => $options['body'],
-						]);
-						break;
-
-					// html
-					case 'html':
-						$expression = $transformer->create('RawExpression', [
-							'expression' => 'echo' . var_export($options['body'], true) . ';',
-						]);
-						break;
-
-					case 'return':
-						$expression = $transformer->create('RawExpression', [
-							'expression' => 'return ' . $transformer->compile($options['body']) . ';',
-						]);
-						break;
+				// the 'visibility' property can be used instead of 'methodModifiers'
+				if (isset($options['visibility']) && !isset($options['methodModifiers'])) {
+					$options['methodModifiers'] = $options['visibility'];
 				}
 
 				$class->expressions[] = $transformer->create('FunctionDeclaration', [
 					'name' => $method,
-					'methodModifiers' => $options['visibility'],
-					'args' => $args,
-					'expressions' => [$expression],
-				]);
+				] + $options);
 			}
 
 			$transformer->outputExpression->addExpression($class);
