@@ -1,5 +1,5 @@
 {
-    "name": "oomphinc/wasp-core",
+    "name": "balbuf/wasp-core",
     "description": "Core transformation handlers for wasp",
     "type": "wasp-plugin",
     "license": "MIT",
