@@ -5,7 +5,7 @@
     "license": "MIT",
     "minimum-stability": "dev",
     "require": {
-        "oomphinc/wasp": ">=0.9"
+        "balbuf/wasp": "~0.11"
     },
     "autoload": {
         "psr-4": {"OomphInc\\WASP\\Core\\": "src/"}
